@@ -4,6 +4,26 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 
+// ── Badge color palette ──────────────────────────────────────────────────
+const BADGE_PALETTE = [
+  chalk.bgCyan.black,
+  chalk.bgYellow.black,
+  chalk.bgMagenta.white,
+  chalk.bgBlue.white,
+  chalk.bgGreen.black,
+  chalk.bgRed.white,
+  chalk.bgWhite.black,
+];
+const _badgeMap = new Map();
+let _badgeIdx = 0;
+function badgeColor(label) {
+  if (!_badgeMap.has(label)) {
+    _badgeMap.set(label, BADGE_PALETTE[_badgeIdx % BADGE_PALETTE.length]);
+    _badgeIdx++;
+  }
+  return _badgeMap.get(label);
+}
+
 // ── Pricing per million tokens (April 2026) ─────────────────────────────
 const PRICING = {
   opus:   { input: 15.0,  output: 75.0,  cacheWrite: 18.75, cacheRead: 1.5  },
@@ -39,6 +59,49 @@ function fmtTokens(n) {
 
 function fmtCost(n) {
   return `$${n.toFixed(4)}`;
+}
+
+function fmtHistoryTime(isoStr) {
+  if (!isoStr) return "—";
+  const d = new Date(isoStr);
+  const day   = d.getDate();
+  const month = d.toLocaleString("en", { month: "short" });
+  const hh    = String(d.getHours()).padStart(2, "0");
+  const mm    = String(d.getMinutes()).padStart(2, "0");
+  return `${day} ${month}, ${hh}:${mm}`;
+}
+
+const SYSTEM_PREFIXES = [
+  "<local-command", "<bash-stdout", "<bash-input", "<bash-stderr",
+  "<command-name", "<command-message", "<system-reminder", "<user-prompt",
+  "<task-notification", "<task-update",
+  "[Request interrupted", "[Image: source", "[Image source",
+  "This session is being continued",
+  "[2m",
+];
+
+function isSystemText(t) {
+  return SYSTEM_PREFIXES.some(p => t.startsWith(p));
+}
+
+function extractPromptText(content, maxLen = 60) {
+  let text;
+  if (typeof content === "string") {
+    const t = content.trimStart();
+    if (isSystemText(t)) return null;
+    text = content;
+  } else if (Array.isArray(content)) {
+    const block = content.find(b => b.type === "text");
+    if (!block?.text) return null;
+    const t = block.text.trimStart();
+    if (isSystemText(t)) return null;
+    text = block.text;
+  } else {
+    return null;
+  }
+  text = text.replace(/\n+/g, " ").trim();
+  if (!text) return null;
+  return text.length > maxLen ? text.slice(0, maxLen - 1) + "…" : text;
 }
 
 // ── JSONL Parser ─────────────────────────────────────────────────────────
@@ -95,6 +158,61 @@ function loadAll(projectsDir) {
         r.session = sessionId;
       }
       all.push(...records);
+    }
+  }
+  return all;
+}
+
+function parseSessionFull(filePath) {
+  const entries = [];
+  let raw;
+  try { raw = fs.readFileSync(filePath, "utf8"); } catch { return entries; }
+
+  for (const line of raw.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    let obj;
+    try { obj = JSON.parse(trimmed); } catch { continue; }
+
+    if (obj.type === "user" && obj.message?.content) {
+      entries.push({
+        type:      "user",
+        uuid:      obj.uuid ?? null,
+        content:   obj.message.content,
+        timestamp: obj.timestamp ?? "",
+        cwd:       obj.cwd ?? "",
+      });
+    } else if (obj.type === "assistant") {
+      const msg = obj.message ?? {};
+      if (!msg.usage) continue;
+      entries.push({
+        type:       "assistant",
+        parentUuid: obj.parentUuid ?? null,
+        usage:      msg.usage,
+        model:      msg.model ?? "",
+      });
+    }
+  }
+  return entries;
+}
+
+function loadAllMessages(projectsDir) {
+  const all = [];
+  if (!fs.existsSync(projectsDir)) return all;
+
+  for (const projectName of fs.readdirSync(projectsDir)) {
+    const projectPath = path.join(projectsDir, projectName);
+    if (!fs.statSync(projectPath).isDirectory()) continue;
+
+    for (const file of fs.readdirSync(projectPath)) {
+      if (!file.endsWith(".jsonl")) continue;
+      const sessionId = file.replace(".jsonl", "");
+      const entries   = parseSessionFull(path.join(projectPath, file));
+      for (const e of entries) {
+        e.project = projectName;
+        e.session = sessionId;
+      }
+      all.push(...entries);
     }
   }
   return all;
@@ -234,30 +352,128 @@ function projects(records) {
   console.log();
 }
 
+function history(filterArg = null) {
+  const allMessages = loadAllMessages(PROJECTS_DIR);
+
+  // Build cost lookup: userUuid → cost (from the assistant reply)
+  const costByParent = new Map();
+  for (const m of allMessages) {
+    if (m.type === "assistant" && m.parentUuid) {
+      const c = calcCost(m.usage, m.model);
+      costByParent.set(m.parentUuid, (costByParent.get(m.parentUuid) ?? 0) + c);
+    }
+  }
+
+  // Collect project labels for the filter bar (pre-populate badge colors in sorted order)
+  const allLabels = [...new Set(
+    allMessages
+      .filter(m => m.type === "user")
+      .map(m => m.cwd ? path.basename(m.cwd) : "")
+      .filter(Boolean)
+  )].sort();
+  allLabels.forEach(l => badgeColor(l)); // seed consistent color assignments
+
+  // Filter user prompts — skip system-injected messages and non-text content
+  let prompts = allMessages.filter(m =>
+    m.type === "user" && m.content && extractPromptText(m.content, 1) !== null
+  );
+  if (filterArg) {
+    prompts = prompts.filter(m => (m.cwd ? path.basename(m.cwd) : "") === filterArg);
+  }
+  prompts.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+  prompts = prompts.slice(0, 50);
+
+  // ── Header ────────────────────────────────────────────────────────────
+  const filterStr = filterArg ? ` ${chalk.dim("›")} ${chalk.cyan(filterArg)}` : "";
+  const countStr  = chalk.dim(`${prompts.length} entr${prompts.length === 1 ? "y" : "ies"}`);
+  console.log(`\n  ${chalk.bold.white("PROMPT HISTORY")}${filterStr}  ${countStr}`);
+
+  // ── Filter bar ────────────────────────────────────────────────────────
+  const allTab = !filterArg ? chalk.bgWhite.black(" All ") : chalk.dim("All");
+  const labelTabs = allLabels.map(label => {
+    const fn = badgeColor(label);
+    return label === filterArg ? fn(` ${label} `) : chalk.dim(label);
+  });
+  console.log(`\n  ${[allTab, ...labelTabs].join("  ")}\n`);
+
+  if (!prompts.length) {
+    console.log(chalk.yellow("  No prompts found.\n"));
+    return;
+  }
+
+  // ── Column layout ─────────────────────────────────────────────────────
+  const W_TIME    = 16;
+  const W_PROJECT = 16; // visible chars (badge text + spaces around it)
+  const W_PROMPT  = 60;
+  const W_SESSION = 10;
+
+  const sepWidth = 2 + W_TIME + 2 + W_PROJECT + 2 + W_PROMPT + 2 + W_SESSION + 2 + 8;
+  const sep = chalk.dim("─".repeat(sepWidth));
+
+  const header =
+    chalk.bold.dim("TIME".padEnd(W_TIME))     + "  " +
+    chalk.bold.dim("PROJECT".padEnd(W_PROJECT)) + "  " +
+    chalk.bold.dim("PROMPT".padEnd(W_PROMPT))  + "  " +
+    chalk.bold.dim("SESSION".padEnd(W_SESSION)) + "  " +
+    chalk.bold.dim("COST");
+
+  console.log("  " + sep);
+  console.log("  " + header);
+  console.log("  " + sep);
+
+  for (const p of prompts) {
+    const rawLabel  = p.cwd ? path.basename(p.cwd) : "unknown";
+    const label     = rawLabel.length > W_PROJECT - 2 ? rawLabel.slice(0, W_PROJECT - 3) + "…" : rawLabel;
+    const badgeFn   = badgeColor(rawLabel);
+    const badge     = badgeFn(` ${label} `);
+    const badgePad  = " ".repeat(Math.max(0, W_PROJECT - label.length - 2));
+    const time      = fmtHistoryTime(p.timestamp).padEnd(W_TIME);
+    const promptTxt = (extractPromptText(p.content, W_PROMPT) ?? "").padEnd(W_PROMPT);
+    const session   = chalk.dim(p.session.slice(0, 8).padEnd(W_SESSION));
+    const rawCost   = costByParent.get(p.uuid);
+    const cost      = rawCost != null ? chalk.green(fmtCost(rawCost)) : chalk.dim("—");
+
+    console.log(
+      "  " +
+      chalk.white(time) + "  " +
+      badge + badgePad  + "  " +
+      promptTxt         + "  " +
+      session           + "  " +
+      cost
+    );
+  }
+
+  console.log("  " + sep + "\n");
+}
+
 // ── Entry Point ──────────────────────────────────────────────────────────
 const PROJECTS_DIR = path.join(os.homedir(), ".claude", "projects");
-const cmd = process.argv[2] ?? "today";
+const cmd  = process.argv[2] ?? "today";
+const arg3 = process.argv[3] ?? null;
 const records = loadAll(PROJECTS_DIR);
 
 const HELP = `
 ${chalk.bold.cyan("claude-usage")} — Claude Code local usage viewer
 
 ${chalk.bold("Commands:")}
-  today     Usage breakdown for today (default)
-  week      Last 7 days summary
-  stats     All-time totals
-  projects  Cost grouped by project
+  today              Usage breakdown for today (default)
+  week               Last 7 days summary
+  stats              All-time totals
+  projects           Cost grouped by project
+  history [project]  Prompt history (newest first, last 50)
 
-${chalk.bold("Example:")}
-  node index.js
-  node index.js week
-  node index.js projects
+${chalk.bold("Examples:")}
+  claude-usage
+  claude-usage week
+  claude-usage history
+  claude-usage history uigen
 `;
 
 switch (cmd) {
-  case "today":    today(records);    break;
-  case "week":     week(records);     break;
-  case "stats":    stats(records);    break;
-  case "projects": projects(records); break;
+  case "today":    today(records);       break;
+  case "week":     week(records);        break;
+  case "stats":    stats(records);       break;
+  case "projects": projects(records);    break;
+  case "history":  history(arg3);        break;
   default:         console.log(HELP);
 }
