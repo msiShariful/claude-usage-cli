@@ -15,6 +15,8 @@ claude-usage                   # today's breakdown (default)
 claude-usage week              # last 7 days summary
 claude-usage stats             # all-time totals
 claude-usage projects          # cost grouped by project
+claude-usage models            # model usage — all-time token share with bar chart
+claude-usage models <period>   # model usage filtered by period
 claude-usage history           # prompt history — last 50 prompts across all projects
 claude-usage history <project> # prompt history filtered by project name
 ```
@@ -22,6 +24,10 @@ claude-usage history <project> # prompt history filtered by project name
 ### Examples
 
 ```bash
+claude-usage models
+claude-usage models today
+claude-usage models week
+claude-usage models month
 claude-usage history uigen
 claude-usage history queries
 ```
@@ -34,6 +40,7 @@ claude-usage history queries
 | `week` | Daily input/output token counts and cost for the last 7 days |
 | `stats` | All-time totals: tokens, cost, models used, sessions, projects |
 | `projects` | Cost and token usage grouped by project, sorted by spend |
+| `models [period]` | Per-model token usage with cost-share bar charts. Periods: `today`, `yesterday`, `week`, `month` (default: all-time) |
 | `history [project]` | Prompt history with timestamps, project badges, and per-prompt cost |
 
 ## How it works

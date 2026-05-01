@@ -234,6 +234,45 @@ function printTable(headers, rows) {
   console.log(chalk.dim(sep));
 }
 
+// ── Model usage helpers ──────────────────────────────────────────────────
+function modelColor(name) {
+  const n = name.toLowerCase();
+  if (n.includes("opus"))   return chalk.magenta;
+  if (n.includes("sonnet")) return chalk.cyan;
+  if (n.includes("haiku"))  return chalk.yellow;
+  return chalk.white;
+}
+
+function filterByPeriod(records, period) {
+  const now          = new Date();
+  const todayStr     = now.toISOString().slice(0, 10);
+  const yesterdayStr = new Date(now - 86_400_000).toISOString().slice(0, 10);
+  const weekAgo      = new Date(now - 6 * 86_400_000).toISOString().slice(0, 10);
+  const monthAgo     = new Date(now - 29 * 86_400_000).toISOString().slice(0, 10);
+  switch (period) {
+    case "today":     return records.filter(r => r.ts.startsWith(todayStr));
+    case "yesterday": return records.filter(r => r.ts.startsWith(yesterdayStr));
+    case "week":      return records.filter(r => r.ts.slice(0, 10) >= weekAgo);
+    case "month":     return records.filter(r => r.ts.slice(0, 10) >= monthAgo);
+    default:          return records;
+  }
+}
+
+function periodLabel(period) {
+  switch (period) {
+    case "today":     return "TODAY";
+    case "yesterday": return "YESTERDAY";
+    case "week":      return "LAST 7 DAYS";
+    case "month":     return "LAST 30 DAYS";
+    default:          return "ALL TIME";
+  }
+}
+
+function renderBar(pct, width, colorFn) {
+  const filled = Math.round(pct / 100 * width);
+  return colorFn("█".repeat(filled)) + chalk.dim("░".repeat(width - filled));
+}
+
 // ── Commands ─────────────────────────────────────────────────────────────
 function today(records) {
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -352,6 +391,115 @@ function projects(records) {
   console.log();
 }
 
+function modelUsage(records, period = "all") {
+  const filtered = filterByPeriod(records, period);
+  const label    = periodLabel(period);
+
+  if (!filtered.length) {
+    console.log(`\n${chalk.bold.cyan("◈ MODEL USAGE")}  ${chalk.dim("·")}  ${chalk.bold(label)}\n`);
+    console.log(chalk.yellow("  No usage found for this period.\n"));
+    return;
+  }
+
+  // Aggregate by model
+  const byModel = {};
+  for (const r of filtered) {
+    const m = (r.model || "unknown").replace(/-\d{8}$/, "");
+    byModel[m] ??= { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, cost: 0 };
+    byModel[m].input      += r.usage.input_tokens ?? 0;
+    byModel[m].output     += r.usage.output_tokens ?? 0;
+    byModel[m].cacheRead  += r.usage.cache_read_input_tokens ?? 0;
+    byModel[m].cacheWrite += r.usage.cache_creation_input_tokens ?? 0;
+    byModel[m].cost       += calcCost(r.usage, r.model);
+  }
+
+  const sorted     = Object.entries(byModel).sort((a, b) => b[1].cost - a[1].cost);
+  const totalCost  = sorted.reduce((s, [, v]) => s + v.cost, 0);
+  const totalIn    = sorted.reduce((s, [, v]) => s + v.input, 0);
+  const totalOut   = sorted.reduce((s, [, v]) => s + v.output, 0);
+  const totalToks  = sorted.reduce((s, [, v]) => s + v.input + v.output + v.cacheRead + v.cacheWrite, 0);
+  const modelCount = sorted.length;
+
+  // ── Header box ────────────────────────────────────────────────────────
+  const BOX_W = 62;
+  const titleCore = `◈ MODEL USAGE  ·  ${label}`;
+  const countTag  = `${modelCount} model${modelCount !== 1 ? "s" : ""}`;
+  const gap       = BOX_W - 2 - titleCore.length - countTag.length;
+  const inner     = titleCore + " ".repeat(Math.max(1, gap)) + countTag;
+
+  console.log();
+  console.log(chalk.dim("┌" + "─".repeat(BOX_W) + "┐"));
+  console.log(
+    chalk.dim("│  ") +
+    chalk.bold.cyan("◈ MODEL USAGE") +
+    chalk.dim("  ·  ") +
+    chalk.bold.white(label) +
+    " ".repeat(Math.max(1, gap)) +
+    chalk.dim(countTag) +
+    chalk.dim("  │")
+  );
+  console.log(chalk.dim("└" + "─".repeat(BOX_W) + "┘"));
+  console.log();
+
+  // ── Column widths ─────────────────────────────────────────────────────
+  const W_MODEL   = Math.max(20, ...sorted.map(([m]) => m.length)) + 2;
+  const W_TOTAL   = 13;
+  const W_INPUT   = 10;
+  const W_OUTPUT  = 10;
+  const BAR_W     = 16;
+  const W_PCT     = 6;   // "82.4%"
+  const W_COST    = 10;
+
+  const sepLen = 2 + W_MODEL + W_TOTAL + W_INPUT + W_OUTPUT + BAR_W + W_PCT + W_COST + 12;
+  const sep    = chalk.dim("─".repeat(sepLen));
+
+  const hdr =
+    chalk.bold.dim("MODEL".padEnd(W_MODEL))       +
+    chalk.bold.dim("TOTAL TOKENS".padEnd(W_TOTAL)) + "  " +
+    chalk.bold.dim("INPUT".padEnd(W_INPUT))         +
+    chalk.bold.dim("OUTPUT".padEnd(W_OUTPUT))       + "  " +
+    chalk.bold.dim("SHARE".padEnd(BAR_W + W_PCT + 1)) +
+    chalk.bold.dim("COST".padStart(W_COST));
+
+  console.log("  " + sep);
+  console.log("  " + hdr);
+  console.log("  " + sep);
+
+  // ── Rows ──────────────────────────────────────────────────────────────
+  for (const [model, v] of sorted) {
+    const pct    = totalCost > 0 ? (v.cost / totalCost) * 100 : 0;
+    const cfn    = modelColor(model);
+    const bar    = renderBar(pct, BAR_W, cfn);
+    const pctStr = `${pct.toFixed(1)}%`.padStart(W_PCT);
+    const toks   = v.input + v.output + v.cacheRead + v.cacheWrite;
+
+    console.log(
+      "  " +
+      cfn(model.padEnd(W_MODEL))                              +
+      fmtTokens(toks).padEnd(W_TOTAL)                         + "  " +
+      chalk.dim(fmtTokens(v.input).padEnd(W_INPUT))           +
+      chalk.dim(fmtTokens(v.output).padEnd(W_OUTPUT))         + "  " +
+      bar + " " + cfn(pctStr)                                  + "  " +
+      chalk.green(fmtCost(v.cost).padStart(W_COST - 2))
+    );
+  }
+
+  // ── Totals row ────────────────────────────────────────────────────────
+  console.log("  " + sep);
+  console.log(
+    "  " +
+    chalk.bold("TOTAL".padEnd(W_MODEL))                        +
+    chalk.bold(fmtTokens(totalToks).padEnd(W_TOTAL))           + "  " +
+    chalk.dim(fmtTokens(totalIn).padEnd(W_INPUT))              +
+    chalk.dim(fmtTokens(totalOut).padEnd(W_OUTPUT))            + "  " +
+    " ".repeat(BAR_W + 1) +
+    chalk.bold("100%".padStart(W_PCT))                         + "  " +
+    chalk.green.bold(fmtCost(totalCost).padStart(W_COST - 2))
+  );
+  console.log("  " + sep);
+  console.log();
+}
+
 function history(filterArg = null) {
   const allMessages = loadAllMessages(PROJECTS_DIR);
 
@@ -461,10 +609,13 @@ ${chalk.bold("Commands:")}
   stats              All-time totals
   projects           Cost grouped by project
   history [project]  Prompt history (newest first, last 50)
+  models [period]    Model usage with % share bars (periods: today, yesterday, week, month)
 
 ${chalk.bold("Examples:")}
   claude-usage
   claude-usage week
+  claude-usage models
+  claude-usage models week
   claude-usage history
   claude-usage history uigen
 `;
@@ -474,6 +625,7 @@ switch (cmd) {
   case "week":     week(records);        break;
   case "stats":    stats(records);       break;
   case "projects": projects(records);    break;
-  case "history":  history(arg3);        break;
+  case "history":  history(arg3);                  break;
+  case "models":   modelUsage(records, arg3 ?? "all"); break;
   default:         console.log(HELP);
 }
