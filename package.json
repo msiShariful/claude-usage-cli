@@ -5,7 +5,7 @@
   "description": "View your Claude Code token usage and costs from the terminal",
   "main": "index.js",
   "bin": {
-    "claude-usage": "./index.js"
+    "claude-usage": "index.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
