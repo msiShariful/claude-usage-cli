@@ -1,6 +1,6 @@
 {
   "name": "@msishariful/claude-usage-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "View your Claude Code token usage and costs from the terminal",
   "main": "index.js",
