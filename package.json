@@ -1,16 +1,26 @@
 {
-  "name": "claude-usage-cli",
+  "name": "@msishariful/claude-usage-cli",
   "version": "1.0.0",
   "type": "module",
-  "description": "",
+  "description": "View your Claude Code token usage and costs from the terminal",
   "main": "index.js",
+  "bin": {
+    "claude-usage": "./index.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "claude",
+    "claude-code",
+    "usage",
+    "cost",
+    "cli"
+  ],
+  "author": "Shariful Islam <sharifulislam12570@gmail.com>",
+  "license": "MIT",
   "dependencies": {
     "chalk": "^5.6.2"
-  }
+  },
+  "homepage": "https://github.com/sharifuldev/claude-usage-cli"
 }
