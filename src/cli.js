@@ -11,6 +11,7 @@ import { modelUsage } from "./commands/models.js";
 import { session }    from "./commands/session.js";
 import { blocks }     from "./commands/blocks.js";
 import { live }       from "./commands/live.js";
+import { web }        from "./commands/web.js";
 import { history }    from "./commands/history.js";
 
 // Argv shape:
@@ -27,6 +28,8 @@ function parseArgs(argv) {
     else if (a === "--limit")  out.opts.limit = Number(argv[++i]);
     else if (a === "--sort")   out.opts.sort = argv[++i];
     else if (a === "--interval") out.opts.interval = Number(argv[++i]);
+    else if (a === "--port")    out.opts.port = Number(argv[++i]);
+    else if (a === "--no-open") out.opts.open = false;
     else if (a === "-h" || a === "--help") out.opts.help = true;
     else if (a === "-v" || a === "--version") out.opts.version = true;
     else if (a.startsWith("--")) { /* unknown — ignore for now */ }
@@ -61,6 +64,9 @@ export function run(argv) {
     case "blocks":             blocks(records, opts); break;
     case "live":
     case "watch":              live(records, opts); break;
+    case "web":
+    case "ui":
+    case "dashboard":          web(records, opts); break;
     case "help":               console.log(HELP); break;
     default:
       console.error(`Unknown command: ${cmd}\n`);

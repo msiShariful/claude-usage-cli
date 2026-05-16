@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>claude-usage · dashboard</title>
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='14' font-size='14'%3E◈%3C/text%3E%3C/svg%3E" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">◈</span>
+      <div class="brand-text">
+        <strong>claude-usage</strong>
+        <small id="server-time">loading…</small>
+      </div>
+    </div>
+    <nav id="nav">
+      <a href="#today"    data-view="today">Today</a>
+      <a href="#live"     data-view="live"><span class="dot"></span> Live</a>
+      <a href="#blocks"   data-view="blocks">Blocks · 5h</a>
+      <a href="#daily"    data-view="daily">Daily</a>
+      <a href="#monthly"  data-view="monthly">Monthly</a>
+      <a href="#models"   data-view="models">Models</a>
+      <a href="#projects" data-view="projects">Projects</a>
+      <a href="#session"  data-view="session">Sessions</a>
+      <a href="#history"  data-view="history">History</a>
+      <a href="#stats"    data-view="stats">All-time stats</a>
+    </nav>
+    <div class="sidebar-foot">
+      <a href="https://github.com/msiShariful/claude-usage-cli" target="_blank" rel="noopener">github</a>
+      <span class="version" id="version">v1.3.0</span>
+    </div>
+  </aside>
+
+  <main id="main">
+    <header class="topbar">
+      <h1 id="view-title">Today</h1>
+      <div class="topbar-actions" id="topbar-actions"></div>
+    </header>
+    <section id="view" class="view"></section>
+  </main>
+
+  <script src="/app.js" type="module"></script>
+</body>
+</html>

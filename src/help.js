@@ -4,7 +4,7 @@ const b = chalk.bold;
 const d = chalk.dim;
 const c = chalk.cyan;
 
-export const VERSION = "1.2.0";
+export const VERSION = "1.3.0";
 
 export const HELP = `
 ${b.cyan("claude-usage")} ${d("v" + VERSION)} — Claude Code local usage & cost viewer
@@ -23,6 +23,7 @@ ${b("COMMANDS")}
   ${c("blocks")}             5-hour billing windows with burn-rate & projection
   ${c("history [project]")}  Recent prompts with per-prompt cost
   ${c("live")}               Live-refreshing today view + active 5h block ${d("(Ctrl-C to exit)")}
+  ${c("web")}                Open the dashboard in your browser ${d("(alias: ui, dashboard)")}
 
 ${b("OPTIONS")}
   ${c("--json")}             Emit machine-readable JSON instead of a table
@@ -32,6 +33,8 @@ ${b("OPTIONS")}
   ${c("--limit N")}          Cap rows (history default 50, session 20, blocks 10)
   ${c("--sort cost|recent")} Session sort order (default cost)
   ${c("--interval N")}       Live refresh interval in seconds (default 3)
+  ${c("--port N")}            Web dashboard port (default 7777)
+  ${c("--no-open")}           Don't auto-open the browser (for \`web\`)
   ${c("-h, --help")}         Show this help
   ${c("-v, --version")}      Print version
 
@@ -56,6 +59,10 @@ ${b("EXAMPLES")}
   ${d("# Live monitoring")}
   claude-usage live
   claude-usage blocks
+
+  ${d("# Web dashboard")}
+  claude-usage web
+  claude-usage web --port 8080 --no-open
 
 ${b("DATA SOURCE")}
   Reads JSONL session logs at ${c("~/.claude/projects/")}

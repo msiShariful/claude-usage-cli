@@ -6,7 +6,7 @@
 [![node](https://img.shields.io/node/v/@msishariful/claude-usage-cli.svg)](https://nodejs.org)
 [![license](https://img.shields.io/npm/l/@msishariful/claude-usage-cli.svg)](./LICENSE)
 
-`claude-usage` reads the JSONL session logs that Claude Code writes to `~/.claude/projects/` and turns them into clean, color-coded tables: daily and monthly rollups, per-session and per-project breakdowns, 5-hour billing windows with burn-rate projection, a live watch view, and exportable JSON.
+`claude-usage` reads the JSONL session logs that Claude Code writes to `~/.claude/projects/` and turns them into clean, color-coded tables: daily and monthly rollups, per-session and per-project breakdowns, 5-hour billing windows with burn-rate projection, a live watch view, exportable JSON, and a **full web dashboard** you can open in your browser.
 
 **No API key. No telemetry. No network calls. Your data never leaves your machine.**
 
@@ -28,6 +28,7 @@
   - [`blocks`](#blocks)
   - [`history`](#history)
   - [`live`](#live)
+  - [`web`](#web)
 - [Global options](#global-options)
 - [JSON output](#json-output)
 - [How it works](#how-it-works)
@@ -354,6 +355,32 @@ claude-usage live --interval 5     # custom refresh interval (seconds)
 
 ---
 
+### `web`
+
+Spin up a local dashboard that mirrors every CLI report in the browser — sidebar nav, dark theme, charts, auto-refreshing live view, and active 5-hour block monitoring. The server runs entirely on your machine; nothing is uploaded. Aliases: `ui`, `dashboard`.
+
+```bash
+claude-usage web                       # opens http://localhost:7777
+claude-usage web --port 8080           # custom port
+claude-usage web --no-open             # don't auto-open browser
+```
+
+What you get in the browser:
+
+- **Today** — KPI cards + per-model breakdown with share bars
+- **Live** — auto-refreshing today/burn-rate/block-progress dashboard
+- **Blocks · 5h** — active block at the top, recent windows table
+- **Daily / Monthly** — chartable cost-over-time + date-range filters
+- **Models** — donut chart of cost share + breakdown table, per period
+- **Projects** — cost-by-project with share bars
+- **Sessions** — sortable by cost or recency
+- **History** — recent prompts with per-prompt cost
+- **All-time stats** — totals at a glance
+
+No accounts, no telemetry. Everything stays local — the server only reads `~/.claude/projects/` and serves to `localhost`.
+
+---
+
 ## Global options
 
 | Flag | Where it applies | Effect |
@@ -365,6 +392,8 @@ claude-usage live --interval 5     # custom refresh interval (seconds)
 | `--limit N` | history, session, blocks | Cap how many rows are shown |
 | `--sort cost\|recent` | session | Sort order (default `cost`) |
 | `--interval N` | live | Refresh interval in seconds (default `3`) |
+| `--port N` | web | Web dashboard port (default `7777`) |
+| `--no-open` | web | Don't auto-open the browser |
 | `-h, --help` | global | Print the help reference |
 | `-v, --version` | global | Print the version |
 
