@@ -1,8 +1,12 @@
 import chalk from "chalk";
 import { calcCost } from "../pricing.js";
 import { fmtTokens, fmtCost } from "../format.js";
+import { filterByPeriod, periodLabel } from "../filters.js";
 
-export function stats(records, { json = false } = {}) {
+export function stats(records, opts = {}) {
+  const { json = false, since, until } = opts;
+  records = filterByPeriod(records, "all", { since, until });
+  const rangeLabel = periodLabel("all", { since, until });
   let input = 0, output = 0, cacheRead = 0, cacheWrite = 0, totalCost = 0;
   const models = new Set(), projects = new Set(), sessions = new Set();
 
@@ -19,6 +23,7 @@ export function stats(records, { json = false } = {}) {
 
   if (json) {
     console.log(JSON.stringify({
+      range: rangeLabel,
       input_tokens: input,
       output_tokens: output,
       cache_read_tokens: cacheRead,
@@ -31,7 +36,7 @@ export function stats(records, { json = false } = {}) {
     return;
   }
 
-  console.log(`\n${chalk.bold.cyan("All-Time Stats")}\n`);
+  console.log(`\n${chalk.bold.cyan("Stats")}  ${chalk.dim(rangeLabel)}\n`);
   const rows = [
     ["Total Input Tokens",    fmtTokens(input)],
     ["Total Output Tokens",   fmtTokens(output)],

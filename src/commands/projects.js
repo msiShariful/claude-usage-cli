@@ -2,8 +2,12 @@ import chalk from "chalk";
 import { calcCost } from "../pricing.js";
 import { fmtTokens, fmtCost } from "../format.js";
 import { printTable } from "../table.js";
+import { filterByPeriod, periodLabel } from "../filters.js";
 
-export function projects(records, { json = false } = {}) {
+export function projects(records, opts = {}) {
+  const { json = false, since, until } = opts;
+  records = filterByPeriod(records, "all", { since, until });
+  const rangeLabel = periodLabel("all", { since, until });
   const byProject = {};
   for (const r of records) {
     const p = r.project;
@@ -30,7 +34,7 @@ export function projects(records, { json = false } = {}) {
     return;
   }
 
-  console.log(`\n${chalk.bold.cyan("Usage by Project")}\n`);
+  console.log(`\n${chalk.bold.cyan("Usage by Project")}  ${chalk.dim(rangeLabel)}\n`);
   const rows = sorted.map(([p, v]) => [
     p.replace(/-/g, "/").slice(0, 45),
     v.sessions.size,

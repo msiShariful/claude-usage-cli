@@ -4,7 +4,8 @@ import { calcCost } from "../pricing.js";
 import { fmtCost, fmtHistoryTime, badgeColor, extractPromptText } from "../format.js";
 import { loadAllMessages, PROJECTS_DIR } from "../parser.js";
 
-export function history(filterArg = null, { json = false, limit = 50 } = {}) {
+export function history(filterArg = null, opts = {}) {
+  const { json = false, limit = 50, since, until } = opts;
   const allMessages = loadAllMessages(PROJECTS_DIR);
 
   const costByParent = new Map();
@@ -29,6 +30,8 @@ export function history(filterArg = null, { json = false, limit = 50 } = {}) {
   if (filterArg) {
     prompts = prompts.filter(m => (m.cwd ? path.basename(m.cwd) : "") === filterArg);
   }
+  if (since) prompts = prompts.filter(m => m.timestamp.slice(0, 10) >= since);
+  if (until) prompts = prompts.filter(m => m.timestamp.slice(0, 10) <= until);
   prompts.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
   prompts = prompts.slice(0, limit);
 
