@@ -22,14 +22,16 @@ ${b("COMMANDS")}
   ${c("session")}            Usage grouped by session ${d("(--sort cost|recent, --limit N)")}
   ${c("blocks")}             5-hour billing windows with burn-rate & projection
   ${c("history [project]")}  Recent prompts with per-prompt cost
-  ${c("live")}               Live-refreshing today view ${d("(Ctrl-C to exit)")}
+  ${c("live")}               Live-refreshing today view + active 5h block ${d("(Ctrl-C to exit)")}
 
 ${b("OPTIONS")}
   ${c("--json")}             Emit machine-readable JSON instead of a table
   ${c("--breakdown")}        Split daily/weekly/monthly rows by model
   ${c("--since YYYY-MM-DD")} Start date for the range
   ${c("--until YYYY-MM-DD")} End date for the range
-  ${c("--limit N")}          Cap rows (history default 50)
+  ${c("--limit N")}          Cap rows (history default 50, session 20, blocks 10)
+  ${c("--sort cost|recent")} Session sort order (default cost)
+  ${c("--interval N")}       Live refresh interval in seconds (default 3)
   ${c("-h, --help")}         Show this help
   ${c("-v, --version")}      Print version
 

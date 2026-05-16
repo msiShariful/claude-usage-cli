@@ -10,6 +10,7 @@ import { projects }   from "./commands/projects.js";
 import { modelUsage } from "./commands/models.js";
 import { session }    from "./commands/session.js";
 import { blocks }     from "./commands/blocks.js";
+import { live }       from "./commands/live.js";
 import { history }    from "./commands/history.js";
 
 // Argv shape:
@@ -25,6 +26,7 @@ function parseArgs(argv) {
     else if (a === "--until")  out.opts.until = argv[++i];
     else if (a === "--limit")  out.opts.limit = Number(argv[++i]);
     else if (a === "--sort")   out.opts.sort = argv[++i];
+    else if (a === "--interval") out.opts.interval = Number(argv[++i]);
     else if (a === "-h" || a === "--help") out.opts.help = true;
     else if (a === "-v" || a === "--version") out.opts.version = true;
     else if (a.startsWith("--")) { /* unknown — ignore for now */ }
@@ -57,6 +59,8 @@ export function run(argv) {
     case "session":
     case "sessions":           session(records, opts); break;
     case "blocks":             blocks(records, opts); break;
+    case "live":
+    case "watch":              live(records, opts); break;
     case "help":               console.log(HELP); break;
     default:
       console.error(`Unknown command: ${cmd}\n`);
