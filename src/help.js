@@ -19,7 +19,7 @@ ${b("COMMANDS")}
   ${c("stats")}              All-time totals across every project
   ${c("projects")}           Cost grouped by project (sorted by spend)
   ${c("models [period]")}    Per-model usage with % share bars
-  ${c("session")}            Usage grouped by individual session (conversation)
+  ${c("session")}            Usage grouped by session ${d("(--sort cost|recent, --limit N)")}
   ${c("blocks")}             5-hour billing windows with burn-rate & projection
   ${c("history [project]")}  Recent prompts with per-prompt cost
   ${c("live")}               Live-refreshing today view ${d("(Ctrl-C to exit)")}

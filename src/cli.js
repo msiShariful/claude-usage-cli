@@ -8,6 +8,7 @@ import { monthly }    from "./commands/monthly.js";
 import { stats }      from "./commands/stats.js";
 import { projects }   from "./commands/projects.js";
 import { modelUsage } from "./commands/models.js";
+import { session }    from "./commands/session.js";
 import { history }    from "./commands/history.js";
 
 // Argv shape:
@@ -22,6 +23,7 @@ function parseArgs(argv) {
     else if (a === "--since")  out.opts.since = argv[++i];
     else if (a === "--until")  out.opts.until = argv[++i];
     else if (a === "--limit")  out.opts.limit = Number(argv[++i]);
+    else if (a === "--sort")   out.opts.sort = argv[++i];
     else if (a === "-h" || a === "--help") out.opts.help = true;
     else if (a === "-v" || a === "--version") out.opts.version = true;
     else if (a.startsWith("--")) { /* unknown — ignore for now */ }
@@ -51,6 +53,8 @@ export function run(argv) {
     case "projects":           projects(records, opts); break;
     case "history":            history(arg3, opts); break;
     case "models":             modelUsage(records, arg3 ?? "all", opts); break;
+    case "session":
+    case "sessions":           session(records, opts); break;
     case "help":               console.log(HELP); break;
     default:
       console.error(`Unknown command: ${cmd}\n`);
