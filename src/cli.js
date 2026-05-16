@@ -2,7 +2,9 @@ import { loadAll } from "./parser.js";
 import { HELP, VERSION } from "./help.js";
 
 import { today }      from "./commands/today.js";
+import { daily }      from "./commands/daily.js";
 import { weekly }     from "./commands/weekly.js";
+import { monthly }    from "./commands/monthly.js";
 import { stats }      from "./commands/stats.js";
 import { projects }   from "./commands/projects.js";
 import { modelUsage } from "./commands/models.js";
@@ -40,8 +42,11 @@ export function run(argv) {
 
   switch (cmd) {
     case "today":              today(records, opts); break;
+    case "daily":              daily(records, opts); break;
     case "week":
     case "weekly":             weekly(records, opts); break;
+    case "month":
+    case "monthly":            monthly(records, opts); break;
     case "stats":              stats(records, opts); break;
     case "projects":           projects(records, opts); break;
     case "history":            history(arg3, opts); break;
