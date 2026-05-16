@@ -1,0 +1,61 @@
+import chalk from "chalk";
+
+const b = chalk.bold;
+const d = chalk.dim;
+const c = chalk.cyan;
+
+export const VERSION = "1.2.0";
+
+export const HELP = `
+${b.cyan("claude-usage")} ${d("v" + VERSION)} — Claude Code local usage & cost viewer
+
+${b("USAGE")}
+  claude-usage [command] [options]
+
+${b("COMMANDS")}
+  ${c("today")}              Today's usage broken down by model (default)
+  ${c("weekly")}             Last 7 days summary  ${d("(alias: week)")}
+  ${c("monthly")}            Last 30 days, grouped by month
+  ${c("stats")}              All-time totals across every project
+  ${c("projects")}           Cost grouped by project (sorted by spend)
+  ${c("models [period]")}    Per-model usage with % share bars
+  ${c("session")}            Usage grouped by individual session (conversation)
+  ${c("blocks")}             5-hour billing windows with burn-rate & projection
+  ${c("history [project]")}  Recent prompts with per-prompt cost
+  ${c("live")}               Live-refreshing today view ${d("(Ctrl-C to exit)")}
+
+${b("OPTIONS")}
+  ${c("--json")}             Emit machine-readable JSON instead of a table
+  ${c("--breakdown")}        Split daily/weekly/monthly rows by model
+  ${c("--since YYYY-MM-DD")} Start date for the range
+  ${c("--until YYYY-MM-DD")} End date for the range
+  ${c("--limit N")}          Cap rows (history default 50)
+  ${c("-h, --help")}         Show this help
+  ${c("-v, --version")}      Print version
+
+${b("PERIOD VALUES")} ${d("(for `models <period>`)")}
+  today  ·  yesterday  ·  week  ·  month
+
+${b("EXAMPLES")}
+  ${d("# Quick checks")}
+  claude-usage
+  claude-usage weekly
+  claude-usage stats
+
+  ${d("# Drill in")}
+  claude-usage models week
+  claude-usage projects --json
+  claude-usage history uigen
+
+  ${d("# Date ranges")}
+  claude-usage weekly --since 2026-04-01 --until 2026-04-30
+  claude-usage monthly --breakdown
+
+  ${d("# Live monitoring")}
+  claude-usage live
+  claude-usage blocks
+
+${b("DATA SOURCE")}
+  Reads JSONL session logs at ${c("~/.claude/projects/")}
+  No API key required · all data stays local
+`;
