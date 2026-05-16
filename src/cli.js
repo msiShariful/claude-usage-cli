@@ -9,6 +9,7 @@ import { stats }      from "./commands/stats.js";
 import { projects }   from "./commands/projects.js";
 import { modelUsage } from "./commands/models.js";
 import { session }    from "./commands/session.js";
+import { blocks }     from "./commands/blocks.js";
 import { history }    from "./commands/history.js";
 
 // Argv shape:
@@ -55,6 +56,7 @@ export function run(argv) {
     case "models":             modelUsage(records, arg3 ?? "all", opts); break;
     case "session":
     case "sessions":           session(records, opts); break;
+    case "blocks":             blocks(records, opts); break;
     case "help":               console.log(HELP); break;
     default:
       console.error(`Unknown command: ${cmd}\n`);
