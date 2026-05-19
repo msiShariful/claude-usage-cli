@@ -1,15 +1,28 @@
+<div align="center">
+
 # claude-usage-cli
 
-> Local-first usage, cost, and burn-rate analytics for [Claude Code](https://claude.ai/code) — straight from your terminal.
+**Local-first usage, cost, and burn-rate analytics for [Claude Code](https://claude.ai/code) — straight from your terminal.**
 
-[![npm version](https://img.shields.io/npm/v/@msishariful/claude-usage-cli.svg?color=cb3837&logo=npm)](https://www.npmjs.com/package/@msishariful/claude-usage-cli)
-[![npm downloads](https://img.shields.io/npm/dt/@msishariful/claude-usage-cli.svg)](https://www.npmjs.com/package/@msishariful/claude-usage-cli)
-[![node](https://img.shields.io/node/v/@msishariful/claude-usage-cli.svg)](https://nodejs.org)
-[![license](https://img.shields.io/npm/l/@msishariful/claude-usage-cli.svg)](./LICENSE)
+[![npm version](https://img.shields.io/npm/v/@msishariful/claude-usage-cli?style=flat-square&color=cb3837&logo=npm&logoColor=white&label=npm)](https://www.npmjs.com/package/@msishariful/claude-usage-cli)
+[![npm downloads](https://img.shields.io/npm/dt/@msishariful/claude-usage-cli?style=flat-square&color=2ea44f&label=downloads)](https://www.npmjs.com/package/@msishariful/claude-usage-cli)
+[![node](https://img.shields.io/badge/node-%3E%3D18-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
+[![license](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](./LICENSE)
 
-`claude-usage` reads the JSONL session logs that Claude Code writes to `~/.claude/projects/` and turns them into clean, color-coded tables: daily and monthly rollups, per-session and per-project breakdowns, 5-hour billing windows with burn-rate projection, a live watch view, exportable JSON, and a **full web dashboard** you can open in your browser.
+</div>
 
-**No API key. No telemetry. No network calls. Your data never leaves your machine.**
+---
+
+`claude-usage` reads the JSONL session logs that Claude Code writes to `~/.claude/projects/` and turns them into clean, color-coded analytics:
+
+- **Daily, weekly, and monthly** token and cost rollups
+- **Per-session and per-project** breakdowns
+- **5-hour billing windows** with burn-rate projection
+- **Live watch mode** that refreshes as you work
+- **Full web dashboard** you can open in your browser
+- **Exportable JSON** for piping into anything else
+
+> **No API key. No telemetry. No network calls.** Your data never leaves your machine.
 
 ---
 
