@@ -5,9 +5,12 @@
 **Local-first usage, cost, and burn-rate analytics for [Claude Code](https://claude.ai/code) — straight from your terminal.**
 
 [![npm version](https://img.shields.io/npm/v/@msishariful/claude-usage-cli?style=flat-square&color=cb3837&logo=npm&logoColor=white&label=npm)](https://www.npmjs.com/package/@msishariful/claude-usage-cli)
-[![npm downloads](https://img.shields.io/npm/dt/@msishariful/claude-usage-cli?style=flat-square&color=2ea44f&label=downloads)](https://www.npmjs.com/package/@msishariful/claude-usage-cli)
 [![node](https://img.shields.io/badge/node-%3E%3D18-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
 [![license](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](./LICENSE)
+
+[![downloads](https://img.shields.io/npm/dt/@msishariful/claude-usage-cli?style=flat-square&logo=npm&logoColor=white&color=2ea44f&label=downloads)](https://www.npmjs.com/package/@msishariful/claude-usage-cli)
+[![this month](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.npmjs.org%2Fdownloads%2Fpoint%2Flast-month%2F%40msishariful%2Fclaude-usage-cli&query=%24.downloads&style=flat-square&logo=npm&logoColor=white&color=2ea44f&label=this%20month)](https://www.npmjs.com/package/@msishariful/claude-usage-cli)
+[![this week](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.npmjs.org%2Fdownloads%2Fpoint%2Flast-week%2F%40msishariful%2Fclaude-usage-cli&query=%24.downloads&style=flat-square&logo=npm&logoColor=white&color=2ea44f&label=this%20week)](https://www.npmjs.com/package/@msishariful/claude-usage-cli)
 
 </div>
 
