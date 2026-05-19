@@ -3,6 +3,7 @@
 > Local-first usage, cost, and burn-rate analytics for [Claude Code](https://claude.ai/code) — straight from your terminal.
 
 [![npm version](https://img.shields.io/npm/v/@msishariful/claude-usage-cli.svg?color=cb3837&logo=npm)](https://www.npmjs.com/package/@msishariful/claude-usage-cli)
+[![npm downloads](https://img.shields.io/npm/dt/@msishariful/claude-usage-cli.svg)](https://www.npmjs.com/package/@msishariful/claude-usage-cli)
 [![node](https://img.shields.io/node/v/@msishariful/claude-usage-cli.svg)](https://nodejs.org)
 [![license](https://img.shields.io/npm/l/@msishariful/claude-usage-cli.svg)](./LICENSE)
 
