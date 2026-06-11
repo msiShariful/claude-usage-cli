@@ -51,7 +51,11 @@ function serveStatic(res, filePath) {
   fs.readFile(resolved, (err, buf) => {
     if (err) return notFound(res);
     const ext = path.extname(resolved).toLowerCase();
-    res.writeHead(200, { "Content-Type": MIME[ext] ?? "application/octet-stream" });
+    res.writeHead(200, {
+      "Content-Type": MIME[ext] ?? "application/octet-stream",
+      // Revalidate every load so upgrades aren't masked by stale cached assets.
+      "Cache-Control": "no-cache",
+    });
     res.end(buf);
   });
 }

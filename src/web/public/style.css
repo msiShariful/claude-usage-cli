@@ -199,3 +199,9 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .history-time { color: var(--text-dim); font-size: 12px; white-space: nowrap; }
 
 canvas { max-width: 100%; }
+
+/* Chart.js with responsive + maintainAspectRatio:false needs a parent with a
+   fixed height, otherwise the canvas grows without bound on every resize tick. */
+.chart-box { position: relative; height: 320px; }
+.chart-box.donut { height: 260px; }
+.chart-box canvas { position: absolute; inset: 0; }

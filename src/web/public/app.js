@@ -283,7 +283,7 @@ function renderDailyOrMonthly(rows, keyName, range) {
     </div>
     <div class="panel">
       <h2>Cost over time</h2>
-      <canvas id="chart" height="80"></canvas>
+      <div class="chart-box"><canvas id="chart"></canvas></div>
     </div>
     <div class="panel">
       <h2>${labelText[0].toUpperCase() + labelText.slice(1)} breakdown</h2>
@@ -356,7 +356,7 @@ async function viewModels() {
         <div class="card"><div class="label">Models</div><div class="value">${d.models.length}</div></div>
       </div>
       <div class="grid-1-2">
-        <div class="panel"><h2>Cost share</h2><canvas id="donut" height="240"></canvas></div>
+        <div class="panel"><h2>Cost share</h2><div class="chart-box donut"><canvas id="donut"></canvas></div></div>
         <div class="panel">
           <h2>Breakdown</h2>
           <table>
